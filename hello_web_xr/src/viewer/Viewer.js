@@ -2,7 +2,6 @@ import React, { Component } from 'react'
 import * as THREE from 'three'
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls'
 import { VRButton } from 'three/examples/jsm/webxr/VRButton'
-import { XRControllerModelFactory } from 'three/examples/jsm/webxr/XRControllerModelFactory'
 
 class Viewer extends Component {
     componentDidMount() {
