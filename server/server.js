@@ -3,13 +3,18 @@ const morgan = require('morgan')
 const cors = require('cors')
 const bodyParser = require('body-parser')
 
-
 const app = express()
 
 app.use(morgan('dev'))
 app.use(bodyParser.urlencoded({ extended: false }))
 app.use(bodyParser.json())
-app.use(cors())
+
+app.use((req, res, next) => {
+    res.set("Access-Control-Allow-Origin", "*")
+    res.set("Access-Control-Allow-Methods", 'GET,PUT,POST,DELETE')
+    app.use(cors())
+    next()
+});
 
 app.post('/api', (req, res) => {
     const body = req.body
