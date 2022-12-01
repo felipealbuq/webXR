@@ -14,9 +14,11 @@ class Viewer extends Component {
         this.container.appendChild(this.renderer.domElement)
 
         this.scene = new THREE.Scene()
-        this.scene.background = new THREE.Color(0xffffff)
+        this.scene.background = new THREE.Color(0x00ffff)
 
         this.camera = new THREE.PerspectiveCamera(70, window.innerWidth / window.innerHeight, 0.1, 2000)
+        // this.camera.position.set(0, 0, 5)
+        this.camera.position.z = 5
         this.scene.add(this.camera)
 
         let ambientLight = new THREE.AmbientLight(0xffffff)
@@ -28,7 +30,14 @@ class Viewer extends Component {
         directionalLight.position.set(0.2, 1.1)
         this.scene.add(directionalLight)
 
+        // let geometry = new THREE.BoxGeometry(1, 1, 1);
+        // this.material = new THREE.MeshBasicMaterial({ color: 0xffffff });
+        // this.cube = new THREE.Mesh(geometry, this.material);
+        // this.cube.position.z = -5
+        // this.camera.add(this.cube);
+
         this.controls = new OrbitControls(this.camera, this.renderer.domElement)
+        this.controls.update()
 
         this.initScene()
         this.setupXR()
@@ -47,7 +56,7 @@ class Viewer extends Component {
 
         this.plane = new THREE.Mesh(PlaneGeometry, planeMaterial)
         this.plane.position.z = -0.45
-        this.camera.add(this.plane)
+        // this.camera.add(this.plane)
 
     }
 
@@ -85,7 +94,8 @@ class Viewer extends Component {
 
     setupXR() {
         this.renderer.xr.enabled = true
-
+        this.renderer.xr.getCamera()
+       
         this.container.appendChild(VRButton.createButton(this.renderer))
     }
 
@@ -106,14 +116,14 @@ class Viewer extends Component {
     }
 
     animate() {
-        let prevAngle = this.camera.rotation.clone();
+        let prevAngle = this.renderer.xr.getCamera().rotation.clone();
         let idle = true;
         let angleToApply = null;
 
         this.renderer.setAnimationLoop(() => {
             this.renderer.render(this.scene, this.camera)
-            idle = this.samePosition(prevAngle, this.camera.rotation)
-            prevAngle = this.camera.rotation.clone()
+            idle = this.samePosition(prevAngle,this.renderer.xr.getCamera().rotation)
+            prevAngle = this.renderer.xr.getCamera().rotation.clone()
             console.log(idle ? "Idle" : "Moving")
 
 
@@ -124,34 +134,55 @@ class Viewer extends Component {
 
             if (idle && angleToApply) {
                 let text = (angleToApply < 0) ? "clock-wise" : "anticlock-wise"
-                let angle = Math.abs(angleToApply)
+                // let angle = Math.abs(angleToApply)
 
-                let rotationStatus = { "angle": angle, "orientation": text }
+                let geometry = new THREE.BoxGeometry(1, 1, 1);
 
-                const asyncPostCall = async () => {
-                    try {
-                        const response = await fetch('http://localhost:5000/api', {
-                            method: 'POST',
-                            headers: {
-                                'Accept': '*/*',
-                                'Content-Type': 'application/json'
-                            },
-                            body: JSON.stringify(rotationStatus)
-                        });
-                        const data = await response.status
-                        console.log(data);
-                    } catch (error) {
-                        console.log(error)
-                    }
+                if (angleToApply < 0){    
+                    let redMaterial = new THREE.MeshBasicMaterial({ color: 0xff0000 });
+                    this.redCube = new THREE.Mesh(geometry, redMaterial);
+                    this.redCube.position.z = -5
+                    this.camera.add(this.redCube);
+                } else {
+                    let blueMaterial = new THREE.MeshBasicMaterial({ color: 0x0000ff });
+                    this.blueCube = new THREE.Mesh(geometry, blueMaterial);
+                    this.blueCube.position.z = -5
+                    this.camera.add(this.blueCube);
                 }
-                asyncPostCall()
-
-                console.log(rotationStatus)
+                
+                console.log(this.renderer.xr.getCamera().rotation)
 
                 angleToApply = null
+                console.log(text)
+
+                // let rotationStatus = { "angle": angle, "orientation": text }
+
+                // const asyncPostCall = async () => {
+                //     try {
+                //         const response = await fetch('http://192.168.0.193:5000/api', {
+                //             method: 'POST',
+                //             headers: {
+                //                 'Accept': '*/*',
+                //                 'Content-Type': 'application/json'
+                //             },
+                //             body: JSON.stringify(rotationStatus)
+                //         });
+                //         const data = await response.status
+                //         console.log(data);
+                //     } catch (error) {
+                //         console.log(error)
+                //     }
+                // }
+                // asyncPostCall()
+
+                // console.log(rotationStatus)
+
+                // angleToApply = null
             }
 
         })
+
+        this.controls.update()
     }
 
     render() {
