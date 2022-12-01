@@ -126,8 +126,6 @@ class Viewer extends Component {
             prevAngle = this.renderer.xr.getCamera().rotation.clone()
             console.log(idle ? "Idle" : "Moving")
 
-
-
             if (!idle) {
                 angleToApply = this.toDeg(prevAngle)
             }
